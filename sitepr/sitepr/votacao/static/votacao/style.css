@@ -1,0 +1,45 @@
+body {
+
+
+    background-color: #45eeb4;
+
+    /*background-image: url('../votacao/images/Raul_Hestnes_Ferreira_ISCTE_4042.jpg');
+
+*/
+}
+li{
+
+      padding-left: 0;
+         list-style-position: inside;
+}
+
+p {
+    color: #f80303;
+}
+
+div {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  font-size: 18px;
+}
+
+
+
+
+
+
+form {
+
+text-align: center;
+
+}
+
+
+.centerClass {
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  text-align: center;
+  font-size: 18px;
+}
