@@ -21,6 +21,11 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import permission_required
+
+
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
 
 def index(request):
@@ -38,6 +43,7 @@ def paginaSucesso(request):
     context = {'latest_question_list': latest_question_list}
     return render(request, 'votacao/paginaSucesso.html', context)
 
+@login_required(login_url='/votacao/paginaInsucesso')
 def paginaAdmin(request):
     latest_question_list = Questao.objects.order_by('-pub_data')[:5]
     context = {'latest_question_list': latest_question_list}
@@ -121,13 +127,14 @@ def loginview(request):
      paginaInsucesso(request)
      return HttpResponseRedirect(reverse('votacao:paginaInsucesso'))
 
+@login_required(login_url='/votacao/paginaInsucesso')
 def apagaQuestao(request, questao_id):
     questao = get_object_or_404(Questao, pk=questao_id)
     questao.delete()
     return HttpResponseRedirect(reverse('votacao:paginaAdmin'))
 
 
-
+@login_required(login_url='/votacao/paginaInsucesso')
 def apagaOpcao(request,questao_id ):
     questao = get_object_or_404(Questao, pk=questao_id)
     idopcao = request.POST['opcao']
@@ -146,15 +153,14 @@ def criarUserButton(request):
     password = request.POST['password']
     curso = request.POST['curso']
 
-    omeuuser = User.objects.create_user(username,
-                                        email,
-                                        password)
+    omeuuser = User.objects.create_user(username,email,password)
     ut = Aluno(user=omeuuser, curso=curso)
     omeuuser.save()
     ut.save()
-    print(ut.curso)
     user = authenticate(username=username, password=password)
     login(request, user)
+
+
     return HttpResponseRedirect(reverse('votacao:index'))
 
 def logoutview(request):
@@ -187,7 +193,7 @@ def voto(request, questao_id):
             args=(questao.id,)))
 
 
-
+@login_required(login_url='/votacao/paginaInsucesso')
 def informacaoPessoal(request):
     filepath = request.FILES.get('myfile', False)
     if request.method == 'POST' and filepath:

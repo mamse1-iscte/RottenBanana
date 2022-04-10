@@ -35,6 +35,6 @@ path('paginaSucesso', views.paginaSucesso, name='paginaSucesso'),
 path('paginaAdmin', views.paginaAdmin, name='paginaAdmin'),
 path('logoutview', views.logoutview, name='logoutview'),
 path('informacaoPessoal', views.informacaoPessoal,name='informacaoPessoal'),
-path('login/', auth_views.LoginView.as_view()),
+path('login', auth_views.LoginView.as_view()),
 ]
 
