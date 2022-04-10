@@ -22,6 +22,7 @@
 <p >Precisas de estar logado para aceder ás questões.</p>
 {% endblock %}
 
+{% block questaoList %}
       {% if latest_question_list %}
       <ul>
          {% for questao in latest_question_list %}
@@ -36,6 +37,7 @@
       {% else %}
       <p>Nao ha questoes disponiveis.</p>
       {% endif %}
+{% endblock %}
 
 
 

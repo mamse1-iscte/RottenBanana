@@ -20,6 +20,7 @@ from django.shortcuts import render
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
+from django.contrib.auth.decorators import login_required
 
 
 def index(request):
@@ -54,20 +55,53 @@ def resultados(request, questao_id):
 'votacao/resultados.html',
 {'questao': questao})
 
-def criarQuestao(request):
-    return render(request, 'votacao/criarquestao.html',)
 
-def gravaquestao(request):
-    strq = request.POST['questao_proposta']
-    questao = Questao(questao_texto=strq, pub_data=timezone.now() )
-    questao.save()
-    return HttpResponseRedirect(reverse('votacao:paginaAdmin'))
+
+def criarQuestao(request):
+    if request.method == 'POST':
+    # se a invocação veio do form, isto é, está no 2º passo
+        try:
+            questao_texto =request.POST.get("questao_proposta")
+        except KeyError:
+            return render(request,'votacao/criarquestao.html')
+        if questao_texto:
+            # se a questao_texto está preenchida,
+            # então vai instanciar a Questão e depois volta ao detalhe
+            questao = Questao(questao_texto = questao_texto,pub_data=timezone.now())
+            questao.save()
+            return HttpResponseRedirect(reverse('votacao:paginaAdmin'))
+        else:
+            # se a questao_texto não está preenchida, volta ao form
+            return HttpResponseRedirect(reverse('votacao:paginaAdmin'))
+    else:
+        # se a invocação não veio do form, isto é, o 1º passo
+        return render(request,'votacao/criarquestao.html')
+
+
 
 def nova_opcao(request, questao_id):
-    questao = get_object_or_404(Questao, pk=questao_id)
-    return render(request, 'votacao/novaopcao.html', {'questao': questao})
+    if request.method == 'POST':
+    # se a invocação veio do form, isto é, está no 2º passo
+        try:
+            questao = get_object_or_404(Questao, pk=questao_id)
+            opcao_texto = request.POST.get("opcao_proposta")
+        except KeyError:
+            return render(request, 'votacao/novaopcao.html', {'questao': questao})
+        if opcao_texto:
+            # se a questao_texto está preenchida,
+            # então vai instanciar a Questão e depois volta ao detalhe
+            op = Opcao(questao=questao, opcao_texto=opcao_texto , votos=0)
+            op.save()
+            return HttpResponseRedirect(reverse('votacao:detalhe', args=(questao.id,)))
+        else:
+            # se a questao_texto não está preenchida, volta ao form
+            return render(request, 'votacao/novaopcao.html', {'questao': questao})
+    else:
+        # se a invocação não veio do form, isto é, o 1º passo
+        return render(request,'votacao/novaopcao.html')
 
-#mudei tudo a partir daqui
+
+
 
 
 def loginview(request):

@@ -10,7 +10,7 @@
      <p><strong>{{ error_message }}</strong></p>
 {% endif %}
 
-<form name="nova_questao" action="{% url 'votacao:gravaquestao' %}" method="POST">
+<form name="nova_questao" action="{% url 'votacao:criarQuestao' %}" method="POST">
     {% csrf_token %}
     Introduza a questão pretendida:  <input type="text" name="questao_proposta"><br>
     <input type="submit" value="Submit">

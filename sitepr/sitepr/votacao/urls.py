@@ -2,6 +2,9 @@ from django.urls import include, path
 from . import views
 
 
+from django.contrib.auth import views as auth_views
+
+
 
 
 
@@ -15,12 +18,9 @@ urlpatterns = [
  path('<int:questao_id>/resultados', views.resultados, name='resultados'),
  # ex: votacao/5/voto
  path('<int:questao_id>/voto', views.voto, name='voto'),
-
-
-
  path('criarQuestao', views.criarQuestao, name='criarQuestao'),
 
- path('gravaquestao', views.gravaquestao, name='gravaquestao'),
+ #path('gravaquestao', views.gravaquestao, name='gravaquestao'),
 
  path('<questao_id>/novaopcao/', views.nova_opcao, name='nova_opcao'),
  path('<questao_id>/nova_opcaoid', views.nova_opcaoid, name='nova_opcaoid'),
@@ -35,5 +35,6 @@ path('paginaSucesso', views.paginaSucesso, name='paginaSucesso'),
 path('paginaAdmin', views.paginaAdmin, name='paginaAdmin'),
 path('logoutview', views.logoutview, name='logoutview'),
 path('informacaoPessoal', views.informacaoPessoal,name='informacaoPessoal'),
+path('login/', auth_views.LoginView.as_view()),
 ]
 
