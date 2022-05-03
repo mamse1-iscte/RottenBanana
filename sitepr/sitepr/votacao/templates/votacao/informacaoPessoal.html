@@ -9,27 +9,41 @@
 
  {% endblock %}
 
-{% block referencia_questao %}
+
+
+{% block filmes %}
 {% endblock %}
 
-{% block Novaquestao %}
+{% block videos %}
+        <br>
+        <br>
+        <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+        {% load static %}
+          <link rel="stylesheet" type="text/css" href="{% static 'votacao/style.css' %}" />
+        <link rel="icon" href="https://cdn.pixabay.com/photo/2016/02/23/17/29/banana-1218133_1280.png">
+    </head>
+    <body>
+
+    <img src="{{ user.critico.imagem }}" alt="Avatar" class="avatar"/>
+    <br>
+    <br>
+    <h2>username: {{user.username}} </h2>
+        <h2>email: {{user.email}} </h2>
+
+    <br>
+    <br>
+    <h2>Mudar Foto de perfil: </h2>
+    <br>
+     <form action="{% url 'votacao:mudarImagemPerfil' %}" enctype="multipart/form-data" method="POST">
+         {% csrf_token %}
+      <input type="file" name="myfile">
+    <input type="submit" value="Submit">
+         </form>
+    <br>
+    <br>
+    <p><a href="{% url 'votacao:HomePage' %}"> Voltar ao inicio</a></p>
+    </body>
+
 {% endblock %}
-
-{% block NovoUtilizador %}
-{% endblock %}
-
-
-{% block questaoList %}
-{% endblock %}
-
-{% block informacaoPessoal %}
-
-<h2>username: {{user.username}} </h2>
-    <h2>email: {{user.email}} </h2>
-
-
-    <h2>curso: {{user.aluno.curso}} </h2>
-
-
-<img src="{{ uploaded_file_url }}" />
-<p><a href="{% url 'votacao:index' %}"> Voltar ao inicio</a></p>

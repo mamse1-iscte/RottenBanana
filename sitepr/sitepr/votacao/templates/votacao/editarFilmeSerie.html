@@ -1,0 +1,41 @@
+{% extends "votacao/HomePage.html" %}
+
+
+
+
+{% block filmes %}
+{% endblock %}
+
+{% block videos %}
+<head>
+  {% load static %}
+<meta charset="utf-8">
+<title> Isto é o que</title>
+<link rel="stylesheet" type="text/css" href="{% static 'votacao/style.css' %}" />
+</head>
+
+    <body>
+  <br>
+       <br>
+       <br>
+
+
+     <a class="button" href="{% url 'votacao:criarFilme' %}"> Criar Filme/Série</a>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+
+        <a class="button" href="{% url 'votacao:apagarFilme' %}"> Apagar Filme/Série</a>
+  <br>
+  <br>
+  <br>
+  <br>
+    </body>
+
+{% endblock %}
+
+
+

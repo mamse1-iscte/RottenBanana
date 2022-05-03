@@ -111,3 +111,28 @@ main {
 .mobile-menu.active .line3 {
   transform: rotate(45deg) translate(-5px, -7px);
 }
+
+.avatar {
+  vertical-align: middle;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+}
+
+.button{
+    padding: 20px 16px;
+    width: 50px;
+    color: #fff;
+    background: #23232e;
+    border: 1px solid #555;
+    border-radius: 5px;
+    text-align: center;
+    user-select: none;
+    cursor:pointer;
+   transition: background 1s;
+}
+
+.button:hover{
+  background: #2388ee;
+    transition: background 1s;
+}

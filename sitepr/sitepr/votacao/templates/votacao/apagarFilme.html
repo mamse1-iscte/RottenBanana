@@ -1,0 +1,23 @@
+{% extends "votacao/HomePage.html" %}
+
+
+
+{% block filmes %}
+{% endblock %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<form name="nova_questao" action="{% url 'votacao:apagarFilme' %}" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Submit">
+</form>
+
+
+
+</body>
+</html>

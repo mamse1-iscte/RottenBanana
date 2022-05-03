@@ -14,8 +14,19 @@ import datetime
 
 from django.contrib.auth.models import User
 
+    def __str__(self):
+        return self.genero
 
+class Subgenero(models.Model):
+    genero = models.CharField(max_length=100)
 
+    def __str__(self):
+        return self.genero
+
+class Subgenero2(models.Model):
+    genero = models.CharField(max_length=100)
+    def __str__(self):
+        return self.genero
 
 class Questao(models.Model):
  questao_texto =models.CharField(max_length=200)
