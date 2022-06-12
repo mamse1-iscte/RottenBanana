@@ -32,8 +32,7 @@ def index(request):
    # context = {'latest_question_list':latest_question_list}
    return render(request, 'votacao/HomePage.html')
 
-def boas(request):
-    return render(request, 'votacao/boas.html')
+
 
 def fazerLogin(request):
     return render(request, 'votacao/fazerLogin.html')
@@ -97,12 +96,12 @@ def loginview(request):
      return HttpResponseRedirect(reverse('votacao:fazerLogin'))
 
 
-
+@login_required(login_url='/votacao/HomePage')
 def informacaoPessoal(request):
     return render(request, 'votacao/informacaoPessoal.html')
 
 
-
+@login_required(login_url='/votacao/HomePage')
 def mudarImagemPerfil(request):
     current_user = request.user
 
@@ -158,6 +157,7 @@ def administradorPage(request):
 
 
 
+@staff_member_required
 def criarFilme(request):
     imagem=''
 
@@ -169,10 +169,7 @@ def criarFilme(request):
         uploaded_file_url = fs.url(filename)
         imagem = uploaded_file_url
 
-
-
     if request.method == 'POST' :
-
 
         # se a invocação veio do form, isto é, está no 2º passo
 
@@ -202,25 +199,56 @@ def criarFilme(request):
          # se a invocação não veio do form, isto é, o 1º passo
         return render(request,'votacao/criarFilme.html')
 
+@login_required(login_url='/votacao/HomePage')
+def criarComentario(request, filme_id):
+    filme = get_object_or_404(Filme_ou_serie, pk=filme_id)
+
+    if request.method == 'POST' :
+
+        # se a invocação veio do form, isto é, está no 2º passo
+
+        comentario_texto = request.POST['comentario_texto']
+
+        rating = request.POST.get('rating', 0);
+        print("rating",rating)
+        #rating = request.POST['rating']
+        latest_coments_movie_list = Comentario.objects.filter(identificador_conteudo=filme_id)
+        latest_movies_list = latest_coments_movie_list.order_by('-pub_data')[:5]
+        context = {'latest_movies_list': latest_movies_list, 'filme': filme}
+
+        if comentario_texto and rating != 0:
+            # se a questao_texto está preenchida,
+            # então vai instanciar a Questão e depois volta ao detalhe
+            print("user id ",request.user)
+            comentario = Comentario(user= request.user, identificador_conteudo = filme, comentario_texto = comentario_texto, rating = rating, pub_data=timezone.now())
+            comentario.save()
+
+            comentarios = Comentario.objects.filter(identificador_conteudo=filme_id)
+
+            nfilmes = comentarios.count()
+
+            totalRating = Comentario.objects.filter(identificador_conteudo=filme_id).aggregate(Sum('rating'))
+
+            totalR = totalRating['rating__sum']
+            score = int((totalR / nfilmes)*10)
+
+            print("nfilmes", nfilmes, "totalRating", totalRating, "totalR", totalR, "score", score)
+            Filme_ou_serie.objects.filter(pk=filme_id).update(filme_ranking_critica=score)
+
+            return HttpResponseRedirect(reverse('votacao:filmePage',args=(filme_id,)))
+        else:
+   # se a questao_texto não está preenchida, volta ao form
+            return HttpResponseRedirect(reverse('votacao:filmePage',args=(filme_id,)))
+    else:
+         # se a invocação não veio do form, isto é, o 1º passo
+        return HttpResponseRedirect(reverse('votacao:filmePage',args=(filme_id,)))
 
 
+@login_required(login_url='/votacao/HomePage')
 def logoutview(request):
     logout(request)
     return HttpResponseRedirect(reverse('votacao:HomePage'))
 
-
-def apagarFilmePage(request):
-    return render(request, 'votacao/apagarFilme.html')
-
-def editarFilmeSerie(request):
-    return render(request, 'votacao/editarFilmeSerie.html')
-
-
-
-def apagarFilme(request):
-    #filme = get_object_or_404(Filme_ou_serie, pk=filme_id)
-   # filme.delete()
-    return HttpResponseRedirect(reverse('votacao:HomePage'))
 
 
 def pesquisaGeneroFilme(request):
@@ -298,5 +326,66 @@ def filmePage(request, filme_id):
 
 
 
+
+
+def teste(request):
+    return render(request, 'votacao/teste.html')
+
+
+
+def pesquisa(request):
+    if 'q' in request.GET:
+        q=request.GET['q']
+        latest_movies_list = Filme_ou_serie.objects.filter(filme_texto__icontains=q)[:5]
+    else:
+        latest_movies_list = Filme_ou_serie.objects.all()[:5]
+    context={'latest_movies_list':latest_movies_list, 'pesquisa':q}
+    return render(request, 'votacao/pesquisa.html',context)
+
+
+
+
+
+
+
+@login_required(login_url='/votacao/HomePage')
+def addTolist(request, filme_id):
+    print("ola")
+    filme = get_object_or_404(Filme_ou_serie, pk=filme_id)
+    w = WatchList(user=request.user, identificador_conteudo=filme, like = 1)
+    latest_coments_movie_list = Comentario.objects.filter(identificador_conteudo = filme_id )
+    latest_movies_list =latest_coments_movie_list.order_by('-pub_data')[:5]
+    watchList = WatchList.objects.all()
+    watchList = WatchList.objects.filter(identificador_conteudo=filme_id)
+    context = {'latest_movies_list':latest_movies_list,'filme': filme, 'watchList':watchList}
+    try:
+        wInList = WatchList.objects.get(identificador_conteudo=filme, user=request.user, like=1)
+        return render(request, 'votacao/filmePage.html', context)
+    except WatchList.DoesNotExist:
+        w.save()
+        return render(request, 'votacao/filmePage.html', context)
+
+
+@login_required(login_url='/votacao/HomePage')
+def delTolist(request, filme_id):
+    filme = get_object_or_404(Filme_ou_serie, pk=filme_id)
+    latest_coments_movie_list = Comentario.objects.filter(identificador_conteudo = filme_id )
+    latest_movies_list =latest_coments_movie_list.order_by('-pub_data')[:5]
+    watchList = WatchList.objects.all()
+    watchList = WatchList.objects.filter(identificador_conteudo=filme_id)
+    context = {'latest_movies_list':latest_movies_list,'filme': filme,'watchList':watchList}
+    try:
+        wInList = WatchList.objects.get(identificador_conteudo=filme, user=request.user, like=1)
+        wInList.delete()
+        return render(request, 'votacao/filmePage.html', context)
+    except WatchList.DoesNotExist:
+        return render(request, 'votacao/filmePage.html', context)
+
+
+@staff_member_required
+def apagarFilmeOuSerie(request, filme_id):
+    filmeOuSerie = get_object_or_404(Filme_ou_serie, pk=filme_id)
+    filmeOuSerie.delete()
+    return HttpResponseRedirect(reverse('votacao:HomePage'))
 
 
