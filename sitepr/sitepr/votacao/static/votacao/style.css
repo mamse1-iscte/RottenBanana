@@ -1,3 +1,4 @@
+
 * {
   margin: 0;
   padding: 0;
@@ -9,9 +10,51 @@ a {
   transition: 0.3s;
 }
 
+
+
+
+
+
+
+
+button {
+    font-size: 16px;
+   color:var(--cor-primaria);
+     background: #23232e;
+     background: #23232e;
+    border: none;
+    outline:none;
+    padding: 5px;
+    cursor: pointer;
+    height: 25px;
+}
+
+/*
+   It hits this state (at least in IE) as you're clicking it
+   To offset the 1px left and 1px top it adds, subtract 1 from each,
+   then add 1 to the right and bottom to keep it the same width and height
+*/
+button:focus:active {
+    padding-top: 4px;
+    padding-left: 4px;
+    padding-right: 6px;
+    padding-bottom: 6px;
+    color: #ccc;
+}
+
+
+
+
+
+
+
 a:hover {
   opacity: 0.7;
 }
+
+ hr{
+     border: 1px solid #23232e;
+ }
 
 .logo {
   font-size: 24px;
@@ -27,14 +70,6 @@ nav {
   background: #23232e;
   height: 8vh;
 }
-
-/*
-main {
-  background: url("") no-repeat center center;
-  background-size: cover;
-  height: 92vh;
-}
-*/
 
 .nav-list {
   list-style: none;

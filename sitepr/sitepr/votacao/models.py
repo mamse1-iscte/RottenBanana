@@ -69,3 +69,9 @@ class Aluno(models.Model):
  '''
 
 
+
+class WatchList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    identificador_conteudo = models.ForeignKey(Filme_ou_serie, on_delete=models.CASCADE)
+    like= models.IntegerField(default=0)
+

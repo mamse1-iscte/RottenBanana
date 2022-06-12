@@ -54,15 +54,24 @@ button:hover {
 }
 
 /* Extra styles for the cancel button */
+
 .cancelbtn {
-  padding: 14px 20px;
+
   background-color: #f44336;
 }
 
+.signupbtn {
+
+  background-color: #04AA6D;
+}
 /* Float cancel and signup buttons and add an equal width */
 .cancelbtn, .signupbtn {
-  float: left;
-  width: 50%;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  opacity: 0.9;
 }
 
 /* Add padding to container elements */
@@ -116,9 +125,9 @@ button:hover {
 
 
 
-    <div class="clearfix">
-      <button type="button" class="cancelbtn">Cancel</button>
-      <button type="submit" class="signupbtn">Log in</button>
+     <div class="clearfix">
+      <input type="submit"   value="Cancel"  class="cancelbtn"  formnovalidate formaction="{% url 'votacao:HomePage' %}">
+        <input type="submit"   value="Sign Up" class="signupbtn">
     </div>
   </div>
 </form>

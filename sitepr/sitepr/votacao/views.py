@@ -1,9 +1,9 @@
 # Create your views here.
 
-from .models import Filme_ou_serie, Genero, Comentario, Critico, Administrador, Subgenero, Subgenero2
+from .models import Filme_ou_serie, Genero, Comentario, Critico, Subgenero, WatchList, Subgenero2
 
 from django.utils import timezone
-
+from django.db.models import Sum
 
 from django.shortcuts import get_object_or_404, render
 from django.http import Http404, HttpResponse,HttpResponseRedirect
@@ -23,6 +23,7 @@ from django.contrib.auth.decorators import permission_required
 
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 
@@ -71,7 +72,7 @@ def criarUserButton(request):
     login(request, user)
 
 
-    return HttpResponseRedirect(reverse('votacao:index'))
+    return HttpResponseRedirect(reverse('votacao:HomePage'))
 
 
 
@@ -87,7 +88,7 @@ def loginview(request):
  if user is not None:
     login(request, user)
     if user.is_staff==1:
-        return HttpResponseRedirect(reverse('votacao:administradorPage'))
+        return HttpResponseRedirect(reverse('votacao:HomePage'))
     #paginaSucesso
     return HttpResponseRedirect(reverse('votacao:HomePage'))
  else:
@@ -122,14 +123,36 @@ def criaConta(request):
     return render(request, 'votacao/criaConta.html')
 
 def mostrarSeries(request):
-    return render(request, 'votacao/mostrarSeries.html')
+    latest_movies_list = Filme_ou_serie.objects.filter(is_filme = 0).order_by('-pub_data')[:5]
+    best_movies_list = Filme_ou_serie.objects.filter(is_filme = 0).order_by('-filme_ranking_critica')[:5]
+    teste = 0
+    context = {'latest_movies_list':latest_movies_list, 'teste':teste, 'best_movies_list':best_movies_list}
+    return render(request, 'votacao/mostrarSeries.html',context)
+
 
 def mostrarFilmes(request):
-    return render(request, 'votacao/mostrarFilmes.html')
+    latest_movies_list = Filme_ou_serie.objects.filter(is_filme = 1).order_by('-pub_data')[:5]
+    best_movies_list = Filme_ou_serie.objects.filter(is_filme = 1).order_by('-filme_ranking_critica')[:5]
+    teste = 1
+    context = {'latest_movies_list':latest_movies_list, 'teste':teste, 'best_movies_list':best_movies_list}
+    return render(request, 'votacao/mostrarFilmes.html',context)
+
+@login_required(login_url='/votacao/HomePage')
+def myList(request):
+    latest_movies_list = WatchList.objects.filter(user = request.user)[:5]
+    teste = 2
+    context = {'latest_movies_list':latest_movies_list, 'teste':teste}
+    return render(request, 'votacao/myList.html',context)
+
+
 
 def HomePage(request):
-    return render(request, 'votacao/HomePage.html')
+    best_movies_list = Filme_ou_serie.objects.order_by('-filme_ranking_critica')[:5]
+    latest_movies_list = Filme_ou_serie.objects.order_by('-pub_data')[:5]
+    context = {'latest_movies_list': latest_movies_list,'best_movies_list':best_movies_list }
+    return render(request, 'votacao/HomePage.html', context)
 
+@login_required(login_url='/votacao/HomePage')
 def administradorPage(request):
     return render(request, 'votacao/administradorPage.html')
 
@@ -161,7 +184,7 @@ def criarFilme(request):
         is_filme = request.POST['is_filme']
         anoLancamento= request.POST['anoLancamento']
         trailer = request.POST['trailer']
-
+        atores= request.POST['atores']
 
         if filme_texto:
             # se a questao_texto está preenchida,
@@ -169,7 +192,7 @@ def criarFilme(request):
             generoObject=Genero.objects.get(pk=genero)
             generoObject1 = Subgenero.objects.get(pk=subgenero)
             generoObject2 = Subgenero2.objects.get(pk=subgenero2)
-            filme = Filme_ou_serie(filme_texto = filme_texto, filme_ranking_critica = 0, filme_ranking_audiencia = 0, filme_descricao = filme_descricao,is_filme = is_filme, pub_data=timezone.now(), genero_id = generoObject ,release_year = anoLancamento, imagem = imagem,  subgenero2_id = generoObject2, subgenero_id = generoObject1 , trailer = trailer)
+            filme = Filme_ou_serie(filme_texto = filme_texto, filme_ranking_critica = 0, filme_descricao = filme_descricao,is_filme = is_filme, pub_data=timezone.now(), genero_id = generoObject ,release_year = anoLancamento, imagem = imagem,  subgenero2_id = generoObject2, subgenero_id = generoObject1 , trailer = trailer, atores=atores)
             filme.save()
             return HttpResponseRedirect(reverse('votacao:HomePage'))
         else:
@@ -198,6 +221,81 @@ def apagarFilme(request):
     #filme = get_object_or_404(Filme_ou_serie, pk=filme_id)
    # filme.delete()
     return HttpResponseRedirect(reverse('votacao:HomePage'))
+
+
+def pesquisaGeneroFilme(request):
+    #latest_movies_list = Filme_ou_serie.objects.filter(is_filme=filme_id)
+    genero=request.POST.get('genero')
+    genero=int(genero)
+
+    latest_movies_list1 = Filme_ou_serie.objects.filter(is_filme=1, genero_id=genero).order_by('-pub_data')[:5]
+    latest_movies_list2 = Filme_ou_serie.objects.filter(is_filme=1, subgenero_id=genero).order_by('-pub_data')[:5]
+    latest_movies_list3 = Filme_ou_serie.objects.filter(is_filme=1, subgenero2_id=genero).order_by('-pub_data')[:5]
+    latest_movies_list = (latest_movies_list1 | latest_movies_list2 | latest_movies_list3).order_by('-pub_data')[:5]
+
+
+    if genero==90:
+        latest_movies_list = Filme_ou_serie.objects.filter(filme_ranking_critica__gte=genero).order_by('-pub_data')[:5]
+        context = {'latest_movies_list': latest_movies_list,'genero': genero}
+        return render(request, 'votacao/pesquisa.html', context)
+    if genero == 70:
+        latest_movies_list = Filme_ou_serie.objects.filter(filme_ranking_critica__gte=genero).order_by('-pub_data')[:5]
+        context = {'latest_movies_list': latest_movies_list,'genero': genero}
+        return render(request, 'votacao/pesquisa.html', context)
+    if genero == 50:
+        latest_movies_list = Filme_ou_serie.objects.filter(filme_ranking_critica__gte=genero).order_by('-pub_data')[:5]
+        context = {'latest_movies_list': latest_movies_list,'genero': genero}
+        return render(request, 'votacao/pesquisa.html', context)
+
+
+    context = {'latest_movies_list': latest_movies_list,'genero': genero}
+    return render(request, 'votacao/genero.html',context)
+
+def pesquisaGeneroSerie(request):
+    #latest_movies_list = Filme_ou_serie.objects.filter(is_filme=filme_id)
+    genero=request.POST.get('genero')
+    genero=int(genero)
+    latest_movies_list1 = Filme_ou_serie.objects.filter(is_filme=0, genero_id=genero).order_by('-pub_data')[:5]
+    latest_movies_list2 = Filme_ou_serie.objects.filter(is_filme=0, subgenero_id=genero).order_by('-pub_data')[:5]
+    latest_movies_list3 = Filme_ou_serie.objects.filter(is_filme=0, subgenero2_id=genero).order_by('-pub_data')[:5]
+    latest_movies_list=(latest_movies_list1 | latest_movies_list2 |latest_movies_list3).order_by('-pub_data')[:5]
+    #mydata = Members.objects.filter(firstname='Emil').values() | Members.objects.filter(firstname='Tobias').values()
+
+    if genero==90:
+        latest_movies_list = Filme_ou_serie.objects.filter(filme_ranking_critica__gte=genero).order_by('-pub_data')[:5]
+        context = {'latest_movies_list': latest_movies_list,'genero': genero}
+        return render(request, 'votacao/pesquisaSerie.html', context)
+    if genero == 70:
+        latest_movies_list = Filme_ou_serie.objects.filter(filme_ranking_critica__gte=genero).order_by('-pub_data')[:5]
+        context = {'latest_movies_list': latest_movies_list,'genero': genero}
+        return render(request, 'votacao/pesquisaSerie.html', context)
+    if genero == 50:
+        latest_movies_list = Filme_ou_serie.objects.filter(filme_ranking_critica__gte=genero).order_by('-pub_data')[:5]
+        context = {'latest_movies_list': latest_movies_list,'genero': genero}
+        return render(request, 'votacao/pesquisaSerie.html', context)
+
+
+    context = {'latest_movies_list': latest_movies_list,'genero': genero}
+    return render(request, 'votacao/generoSerie.html',context)
+
+
+
+
+
+def filmePage(request, filme_id):
+    #objeto se não dá erro 404
+    filme = get_object_or_404(Filme_ou_serie, pk = filme_id)
+    latest_coments_movie_list = Comentario.objects.filter(identificador_conteudo = filme_id )
+    latest_movies_list =latest_coments_movie_list.order_by('-pub_data')[:5]
+    if request.user.is_authenticated:
+        watchList = WatchList.objects.all()
+        watchList = WatchList.objects.filter(identificador_conteudo=filme_id,user_id=request.user)
+        context = {'latest_movies_list':latest_movies_list,'filme': filme,'watchList':watchList}
+        return render(request, 'votacao/filmePage.html', context)
+    else:
+        context = {'latest_movies_list':latest_movies_list,'filme': filme}
+        return render(request, 'votacao/filmePage.html', context)
+
 
 
 
